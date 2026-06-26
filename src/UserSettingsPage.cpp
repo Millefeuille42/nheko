@@ -76,6 +76,8 @@ UserSettings::load(std::optional<QString> profile)
     sortByAlphabet_       = settings.value("user/sort_by_alphabet", false).toBool();
     readReceipts_         = settings.value("user/read_receipts", true).toBool();
     theme_                = settings.value("user/theme", defaultTheme_).toString();
+    matrixToDomains_ =
+      settings.value("user/matrix_to_domains", defaultMatrixToDomains_).toStringList();
 
     font_ = settings.value("user/font_family", "").toString();
 
@@ -660,6 +662,16 @@ UserSettings::setTheme(QString theme)
 }
 
 void
+UserSettings::setMatrixToDomains(QStringList domains)
+{
+    if (domains == matrixToDomains_)
+        return;
+    matrixToDomains_ = domains;
+    save();
+    emit matrixToDomainsChanged(domains);
+}
+
+void
 UserSettings::setUseStunServer(bool useStunServer)
 {
     if (useStunServer == useStunServer_)
@@ -949,6 +961,7 @@ UserSettings::save()
     settings.setValue("desktop_notifications", hasDesktopNotifications_);
     settings.setValue("alert_on_notification", hasAlertOnNotification_);
     settings.setValue("theme", theme());
+    settings.setValue("matrix_to_domains", matrixToDomains_);
     settings.setValue("font_family", font_);
     settings.setValue("emoji_font_family", emojiFont_);
     settings.setValue("ringtone", ringtone_);
@@ -1040,6 +1053,8 @@ UserSettingsModel::data(const QModelIndex &index, int role) const
         switch (index.row()) {
         case Theme:
             return tr("Theme");
+        case MatrixToDomains:
+            return tr("matrix.to domains");
         case ScaleFactor:
             return tr("Scale factor");
         case MessageHoverHighlight:
@@ -1202,6 +1217,8 @@ UserSettingsModel::data(const QModelIndex &index, int role) const
               QStringLiteral("system"),
             }
               .indexOf(i->theme());
+        case MatrixToDomains:
+            return i->matrixToDomains();
         case ScaleFactor:
             return utils::scaleFactor();
         case MessageHoverHighlight:
@@ -1349,6 +1366,8 @@ UserSettingsModel::data(const QModelIndex &index, int role) const
     } else if (role == Description) {
         switch (index.row()) {
         case Theme:
+        case MatrixToDomains:
+            return tr("Choose domains to handle as matrix.to links");
         case Font:
         case EmojiFont:
             return {};
@@ -1560,6 +1579,8 @@ UserSettingsModel::data(const QModelIndex &index, int role) const
         case Ringtone:
         case ShowImage:
             return Options;
+        case MatrixToDomains:
+            return MultiLineText;
         case TimelineMaxWidth:
         case PrivacyScreenTimeout:
             return Integer;
@@ -1768,6 +1789,13 @@ UserSettingsModel::setData(const QModelIndex &index, const QVariant &value, int 
                 return true;
             } else if (value == 2) {
                 i->setTheme("system");
+                return true;
+            } else
+                return false;
+        }
+        case MatrixToDomains: {
+            if (value.canConvert<QStringList>()) {
+                i->setMatrixToDomains(value.toStringList());
                 return true;
             } else
                 return false;
@@ -2271,6 +2299,9 @@ UserSettingsModel::UserSettingsModel(QObject *p)
     auto s = UserSettings::instance();
     connect(s.get(), &UserSettings::themeChanged, this, [this]() {
         emit dataChanged(index(Theme), index(Theme), {Value});
+    });
+    connect(s.get(), &UserSettings::matrixToDomainsChanged, this, [this]() {
+        emit dataChanged(index(MatrixToDomains), index(MatrixToDomains), {Value});
     });
     connect(s.get(), &UserSettings::mobileModeChanged, this, [this]() {
         emit dataChanged(index(MobileMode), index(MobileMode), {Value});
