@@ -2178,8 +2178,11 @@ utils::convertToMatrixURI(const QString &input)
     QString eventId;
     QString identifier;
 
-    if (uri_.scheme() == QLatin1String("https") && uri_.host() == QLatin1String("matrix.to")) {
+    QStringList domains = UserSettings::instance()->matrixToDomains();
+    if (uri_.scheme() == QLatin1String("https") && domains.contains(uri_.host())) {
         QString p = uri_.fragment(QUrl::FullyEncoded);
+        if (p.startsWith(QLatin1String("/room")) || p.startsWith(QLatin1String("/user")))
+            p.remove(0, 5);
         if (p.startsWith(QLatin1Char('/')))
             p.remove(0, 1);
 
