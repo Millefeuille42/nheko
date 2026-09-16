@@ -57,7 +57,6 @@ Rectangle {
         ToolTip.text: qsTr("Cancel Edit")
         ToolTip.visible: closeEditButton.hovered
         anchors.margins: 8
-        anchors.right: closeThreadButton.left
         anchors.top: parent.top
         height: 22
         hoverEnabled: true
@@ -73,7 +72,6 @@ Rectangle {
         ToolTip.text: qsTr("Cancel Thread")
         ToolTip.visible: closeThreadButton.hovered
         anchors.margins: 8
-        anchors.right: parent.right
         anchors.top: parent.top
         buttonTextColor: room ? TimelineManager.userColor(room.thread, palette.base) : palette.buttonText
         height: 22
@@ -84,4 +82,48 @@ Rectangle {
 
         onClicked: room.thread = undefined
     }
+    states: [
+        State {
+            name: "leftHanded"
+            when: Settings.leftHandedMode
+
+            AnchorChanges {
+                target: closeThreadButton
+                anchors.left: replyPopup.left
+                anchors.right: undefined
+            }
+            AnchorChanges {
+                target: closeEditButton
+                anchors.left: closeThreadButton.right
+                anchors.right: undefined
+            }
+            AnchorChanges {
+                target: replyPreview
+                anchors.left: closeEditButton.visible
+                    ? closeEditButton.right
+                    : (closeThreadButton.visible ? closeThreadButton.right : replyPopup.left)
+                anchors.right: replyPopup.right
+            }
+        },
+        State {
+            name: "rightHanded"
+            when: !Settings.leftHandedMode
+
+            AnchorChanges {
+                target: closeThreadButton
+                anchors.left: undefined
+                anchors.right: replyPopup.right
+            }
+            AnchorChanges {
+                target: closeEditButton
+                anchors.left: undefined
+                anchors.right: closeThreadButton.left
+            }
+            AnchorChanges {
+                target: replyPreview
+                anchors.left: replyPopup.left
+                anchors.right: replyPopup.right
+            }
+        }
+    ]
 }
