@@ -71,6 +71,7 @@ UserSettings::load(std::optional<QString> profile)
     smallAvatars_         = settings.value("user/small_avatars_enabled", false).toBool();
     animateImagesOnHover_ = settings.value("user/animate_images_on_hover", false).toBool();
     alwaysDisplayCaption_ = settings.value("user/always_display_caption", false).toBool();
+    leftHandedMode_       = settings.value("user/left_handed_mode", false).toBool();
     typingNotifications_  = settings.value("user/typing_notifications", true).toBool();
     sortByImportance_     = settings.value("user/sort_by_unread", true).toBool();
     sortByAlphabet_       = settings.value("user/sort_by_alphabet", false).toBool();
@@ -384,6 +385,16 @@ UserSettings::setAlwaysDisplayCaption(bool state)
         return;
     alwaysDisplayCaption_ = state;
     emit alwaysDisplayCaptionChanged(state);
+    save();
+}
+
+void
+UserSettings::setLeftHandedMode(bool state)
+{
+    if (state == leftHandedMode_)
+        return;
+    leftHandedMode_ = state;
+    emit leftHandedModeChanged(state);
     save();
 }
 
@@ -958,6 +969,7 @@ UserSettings::save()
     settings.setValue("small_avatars_enabled", smallAvatars_);
     settings.setValue("animate_images_on_hover", animateImagesOnHover_);
     settings.setValue("always_display_caption", alwaysDisplayCaption_);
+    settings.setValue("left_handed_mode", leftHandedMode_);
     settings.setValue("desktop_notifications", hasDesktopNotifications_);
     settings.setValue("alert_on_notification", hasAlertOnNotification_);
     settings.setValue("theme", theme());
@@ -1081,6 +1093,8 @@ UserSettingsModel::data(const QModelIndex &index, int role) const
             return tr("Play animated images only on hover");
         case AlwaysDisplayCaption:
             return tr("Always display image caption");
+        case LeftHandedMode:
+            return tr("Left-handed mode");
         case ShowImage:
             return tr("Show images automatically");
         case TypingNotifications:
@@ -1245,6 +1259,8 @@ UserSettingsModel::data(const QModelIndex &index, int role) const
             return i->animateImagesOnHover();
         case AlwaysDisplayCaption:
             return i->alwaysDisplayCaption();
+        case LeftHandedMode:
+            return i->leftHandedMode();
         case ShowImage:
             return static_cast<int>(i->showImage());
         case TypingNotifications:
@@ -1418,6 +1434,8 @@ UserSettingsModel::data(const QModelIndex &index, int role) const
             return tr("Plays media like GIFs or WEBPs only when explicitly hovering over them.");
         case AlwaysDisplayCaption:
             return tr("Always display the images captions, not only when hovering over them.");
+        case LeftHandedMode:
+            return tr("Swap some UI elements to the left.");
         case ShowImage:
             return tr("If images should be automatically displayed. You can select between always "
                       "showing images by default, only show them by default in private rooms or "
@@ -1599,6 +1617,7 @@ UserSettingsModel::data(const QModelIndex &index, int role) const
         case SmallAvatars:
         case AnimateImagesOnHover:
         case AlwaysDisplayCaption:
+        case LeftHandedMode:
         case TypingNotifications:
         case SortByImportance:
         case SortByAlphabet:
@@ -1901,6 +1920,14 @@ UserSettingsModel::setData(const QModelIndex &index, const QVariant &value, int 
             } else
                 return false;
         }
+        case LeftHandedMode:
+            {
+                if (value.userType() == QMetaType::Bool) {
+                    i->setLeftHandedMode(value.toBool());
+                    return true;
+                } else
+                    return false;
+            }
         case TypingNotifications: {
             if (value.userType() == QMetaType::Bool) {
                 i->setTypingNotifications(value.toBool());
@@ -2353,6 +2380,9 @@ UserSettingsModel::UserSettingsModel(QObject *p)
     });
     connect(s.get(), &UserSettings::alwaysDisplayCaptionChanged, this, [this]() {
         emit dataChanged(index(AlwaysDisplayCaption), index(AlwaysDisplayCaption), {Value});
+    });
+    connect(s.get(), &UserSettings::leftHandedModeChanged, this, [this]() {
+        emit dataChanged(index(LeftHandedMode), index(LeftHandedMode), {Value});
     });
     connect(s.get(), &UserSettings::showImageChanged, this, [this]() {
         emit dataChanged(index(ShowImage), index(ShowImage), {Value});
