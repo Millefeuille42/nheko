@@ -39,6 +39,8 @@ class UserSettings final : public QObject
                  NOTIFY animateImagesOnHoverChanged)
     Q_PROPERTY(bool alwaysDisplayCaption READ alwaysDisplayCaption WRITE setAlwaysDisplayCaption
                  NOTIFY alwaysDisplayCaptionChanged)
+    Q_PROPERTY(bool leftHandedMode READ leftHandedMode WRITE setLeftHandedMode
+              NOTIFY leftHandedModeChanged)
     Q_PROPERTY(bool typingNotifications READ typingNotifications WRITE setTypingNotifications NOTIFY
                  typingNotificationsChanged)
     Q_PROPERTY(bool sortByImportance READ sortByImportance WRITE setSortByImportance NOTIFY
@@ -200,6 +202,7 @@ public:
     void setSmallAvatars(bool state);
     void setAnimateImagesOnHover(bool state);
     void setAlwaysDisplayCaption(bool state);
+    void setLeftHandedMode(bool state);
     void setReadReceipts(bool state);
     void setTypingNotifications(bool state);
     void setSortByImportance(bool state);
@@ -278,6 +281,7 @@ public:
     bool smallAvatars() const { return smallAvatars_; }
     bool animateImagesOnHover() const { return animateImagesOnHover_; }
     bool alwaysDisplayCaption() const { return alwaysDisplayCaption_; }
+    bool leftHandedMode() const { return leftHandedMode_; }
     bool typingNotifications() const { return typingNotifications_; }
     bool sortByImportance() const { return sortByImportance_; }
     bool sortByAlphabet() const { return sortByAlphabet_; }
@@ -353,6 +357,7 @@ signals:
     void smallAvatarsChanged(bool state);
     void animateImagesOnHoverChanged(bool state);
     void alwaysDisplayCaptionChanged(bool state);
+    void leftHandedModeChanged(bool state);
     void typingNotificationsChanged(bool state);
     void buttonInTimelineChanged(bool state);
     void readReceiptsChanged(bool state);
@@ -426,6 +431,7 @@ private:
     bool smallAvatars_;
     bool animateImagesOnHover_;
     bool alwaysDisplayCaption_;
+    bool leftHandedMode_;
     bool typingNotifications_;
     bool sortByImportance_;
     bool sortByAlphabet_;
@@ -524,6 +530,7 @@ class UserSettingsModel : public QAbstractListModel
         FancyEffects,
         AnimateImagesOnHover,
         AlwaysDisplayCaption,
+        LeftHandedMode,
         MessageHoverHighlight,
 
         TimelineSection,
